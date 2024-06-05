@@ -1,9 +1,9 @@
 import telebot
 from telebot import types
+
 # Вставьте сюда свой токен
 bot = telebot.TeleBot('6989967497:AAEdT16N26Gemg1bXQN8TpziPkQS7mPitYU')
-
-# Обработчик команды /start
+my_chat_id = 631104511
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -14,7 +14,6 @@ def start(message):
     markup.add(item1, item2, item3, item4)
     bot.send_message(message.chat.id, "Добро пожаловать! Выберите опцию:", reply_markup=markup)
 
-# Обработчик текстовых сообщений
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
     if message.text == "Меню":
@@ -43,22 +42,12 @@ def request_feedback(message):
     msg = bot.send_message(message.chat.id, "Пожалуйста, напишите ваш отзыв или предложение:")
     bot.register_next_step_handler(msg, feedback)
 
+def feedback(message):
+    bot.send_message(my_chat_id, f"Отзыв: {message.text}")
+    bot.send_message(message.chat.id, "Спасибо за ваш отзыв!")
+
 def contact_manager(message):
     bot.send_message(message.chat.id, "Для связи с менеджером позвоните по телефону: +1234567890 или напишите на email: manager@example.com")
 
-def feedback(message):
-    # Здесь можно добавить логику сохранения отзыва в базу данных или отправки администратору
-    bot.send_message(message.chat.id, "Спасибо за ваш отзыв!")
-
-# Обработчик callback данных от inline кнопок
-@bot.callback_query_handler(func=lambda call: True)
-def callback_inline(call):
-    if call.data == 'dish1':
-        bot.send_message(call.message.chat.id, "Описание блюда 1...")
-    elif call.data == 'dish2':
-        bot.send_message(call.message.chat.id, "Описание блюда 2...")
-    elif call.data == 'dish3':
-        bot.send_message(call.message.chat.id, "Описание блюда 3...")
-
 if __name__ == '__main__':
-    bot.polling(none_stop=True)
+    bot.infinity_polling()
