@@ -1,47 +1,52 @@
 import telebot
 from telebot import types
 
-# bot = telebot.TeleBot('6989967497:AAEdT16N26Gemg1bXQN8TpziPkQS7mPitYU')
+bot = telebot.TeleBot('6989967497:AAEdT16N26Gemg1bXQN8TpziPkQS7mPitYU')
 my_chat_id = 631104511
-
 @bot.message_handler(commands=['start'])
-def start_message(message):
-    bot.send_dice(message.chat.id)
-    keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    button1 = types.KeyboardButton(text='Service')
-    button2 = types.KeyboardButton(text='About us')
-    button3 = types.KeyboardButton(text='Leave an order')
-    keyboard.add(button1, button2, button3)
-    bot.send_message(message.chat.id, 'Good afternoon! We are a restaurant "Podliy Chef"', reply_markup=keyboard)
-
-def info_func(message):
-    keyboard = types.InlineKeyboardMarkup()
-    url_button = types.InlineKeyboardButton(text='Link to our website', url='https://yandex.ru/')
-    keyboard.add(url_button)
-    bot.send_message(message.chat.id, 'Info about the company', reply_markup=keyboard)
-
-def send_request(message):
-    mes = f'New order: {message.text}'
-    bot.send_message(my_chat_id, mes)
-    bot.send_message(message.chat.id, 'Thanks for your order! Our cooker will be do all in their best, so that satisfy you!')
-
-def send_service(message):
-    services = [
-        '1. Quickly cook meal ',
-        '2. Reserve a table ',
-        '3. Make a personal menu for VIP clients'
-    ]
-    bot.send_message(message.chat.id, '\n'.join(services))
+def start(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Меню")
+    item2 = types.KeyboardButton("Часы работы")
+    item3 = types.KeyboardButton("Обратная связь")
+    item4 = types.KeyboardButton("Связаться с менеджером")
+    markup.add(item1, item2, item3, item4)
+    bot.send_message(message.chat.id, "Добро пожаловать! Выберите опцию:", reply_markup=markup)
 
 @bot.message_handler(content_types=['text'])
-def repeat_all_messages(message):
-    if message.text.lower() == 'about us':
-        info_func(message)
-    elif message.text.lower() == 'leave an order':
-        bot.send_message(message.chat.id, 'We would be glad to serve you! Please leave your contact data.')
-        bot.register_next_step_handler(message, send_request)
-    elif message.text.lower() == 'service':
-        send_service(message)
+def handle_text(message):
+    if message.text == "Меню":
+        show_menu(message)
+    elif message.text == "Часы работы":
+        show_hours(message)
+    elif message.text == "Обратная связь":
+        request_feedback(message)
+    elif message.text == "Связаться с менеджером":
+        contact_manager(message)
+    else:
+        bot.send_message(message.chat.id, "Извините, я вас не понял. Пожалуйста, выберите опцию из меню.")
+
+def show_menu(message):
+    markup = types.InlineKeyboardMarkup()
+    dish1 = types.InlineKeyboardButton("Блюдо 1", callback_data='dish1')
+    dish2 = types.InlineKeyboardButton("Блюдо 2", callback_data='dish2')
+    dish3 = types.InlineKeyboardButton("Блюдо 3", callback_data='dish3')
+    markup.add(dish1, dish2, dish3)
+    bot.send_message(message.chat.id, "Выберите блюдо из меню:", reply_markup=markup)
+
+def show_hours(message):
+    bot.send_message(message.chat.id, "Мы работаем с 9 до 21 каждый день.")
+
+def request_feedback(message):
+    msg = bot.send_message(message.chat.id, "Пожалуйста, напишите ваш отзыв или предложение:")
+    bot.register_next_step_handler(msg, feedback)
+
+def feedback(message):
+    bot.send_message(my_chat_id, f"Отзыв: {message.text}")
+    bot.send_message(message.chat.id, "Спасибо за ваш отзыв!")
+
+def contact_manager(message):
+    bot.send_message(message.chat.id, "Для связи с менеджером позвоните по телефону: +1234567890 или напишите на email: manager@example.com")
 
 if __name__ == '__main__':
     bot.infinity_polling()
